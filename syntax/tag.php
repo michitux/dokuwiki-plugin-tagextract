@@ -50,12 +50,16 @@ class syntax_plugin_tagextract_tag extends DokuWiki_Syntax_Plugin {
      * @return array Data for the renderer
      */
     public function handle($match, $state, $pos, &$handler){
+        global $ID;
+
         $tags = explode(' ', $match);
-        foreach ($tags as $i => $tag) {
-            $tags[$i] = substr($tag, 1); // strip @
+        $data = array();
+
+        foreach ($tags as $tag) {
+            $data[substr($tag, 1)] = substr(md5($ID.'#'.$pos.'#'.$tag), 0, 6); // strip @, generate unique id
         }
 
-        return $tags;
+        return $data;
     }
 
     /**
@@ -70,12 +74,17 @@ class syntax_plugin_tagextract_tag extends DokuWiki_Syntax_Plugin {
         if ($mode == 'metadata') {
             /** @var $renderer Doku_Renderer_metadata */
             if (empty($renderer->meta['plugin_tagextract'])) {
-                $renderer->meta['plugin_tagextract'] = $data;
+                $renderer->meta['plugin_tagextract'] = array_keys($data);
             } else {
-                $renderer->meta['plugin_tagextract'] = array_merge($renderer->meta['plugin_tagextract'], $data);
+                $renderer->meta['plugin_tagextract'] = array_merge($renderer->meta['plugin_tagextract'], array_keys($data));
+            }
+        } elseif ($mode == 'xhtml') {
+            global $ID; // include the id in the link in order to have a link back to this page in the tag extracts listing
+            foreach ($data as $tag => $uid) {
+                $renderer->doc .= '<a href="'.wl($ID).'#tagextract__'.$uid.'" id="tagextract__'.$uid.'" class="wikilink1">@'.hsc($tag).'</a> ';
             }
         } else {
-            foreach ($data as $tag) {
+            foreach ($data as $tag => $uid) {
                 $renderer->emphasis_open();
                 $renderer->cdata(' @'.$tag.' ');
                 $renderer->emphasis_close();

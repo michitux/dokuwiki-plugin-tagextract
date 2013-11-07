@@ -86,7 +86,7 @@ class syntax_plugin_tagextract_list extends DokuWiki_Syntax_Plugin {
                 $instructions = p_cached_instructions(wikiFN($page), false, $page);
                 $num_ins = count($instructions);
                 foreach ($instructions as $i => $ins) {
-                    if ($ins[0] == 'plugin' && $ins[1][0] == 'tagextract_tag' && in_array($tag, $ins[1][1])) {
+                    if ($ins[0] == 'plugin' && $ins[1][0] == 'tagextract_tag' && array_key_exists($tag, $ins[1][1])) {
                         // search listitem_open before and listitem_close of same level after the tag
                         for ($i_before = $i-1; $i_before > 0 && $instructions[$i_before][0] != 'listitem_open'; --$i_before) ;
                         if ($i_before == 0) {
