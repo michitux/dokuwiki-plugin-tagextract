@@ -21,6 +21,7 @@ class action_plugin_tagextract extends DokuWiki_Action_Plugin {
 
         $controller->register_hook('INDEXER_PAGE_ADD', 'BEFORE', $this, 'handle_indexer_page_add');
         $controller->register_hook('INDEXER_VERSION_GET', 'BEFORE', $this, 'handle_indexer_version_get');
+        $controller->register_hook('PARSER_CACHE_USE', 'BEFORE', $this, 'handle_parser_cache_use');
    
     }
 
@@ -52,6 +53,69 @@ class action_plugin_tagextract extends DokuWiki_Action_Plugin {
      */
     public function handle_indexer_version_get(Doku_Event &$event, $param) {
         $event->data['plugin_tagextract'] = '0.1';
+    }
+
+    /**
+     * Invalidate the cache of tag listings if needed
+     *
+     * @param Doku_Event $event  event object by reference
+     * @param mixed      $param  [the parameters passed as fifth argument to register_hook() when this
+     *                           handler was registered]
+     * @return bool              If the cache may be used
+     */
+    public function handle_parser_cache_use(Doku_Event &$event, $param) {
+        global $conf;
+        /** @var $cache cache_parser */
+        $cache = $event->data;
+
+        if ($cache->mode == 'i') return true; // don't handle instructions
+
+        $id = $cache->page;
+        if (!$id) {
+            // try to reconstruct the id from the filename
+            $path = $cache->file;
+            if (strpos($path, $conf['datadir']) === 0) {
+                $path = substr($path, strlen($conf['datadir'])+1);
+                $id = pathID($path);
+            }
+        }
+        if ($id) {
+            $meta = p_get_metadata($id, 'plugin_tagextract_list');
+            $cache_mtime = @filemtime($cache->cache);
+            $modified_check_needed =  ($cache_mtime < @filemtime($conf['cachedir'].'/purgefile'));
+
+            if (!empty($meta)) {
+                $tags = array_keys($meta);
+
+                $indexer = idx_get_indexer();
+                $pages = $indexer->lookupKey('plugin_tagextract', $tags);
+
+                foreach ($meta as $tag => $meta_pages) {
+                    natsort($pages[$tag]);
+
+                    $used_pages = array();
+
+                    foreach ($pages[$tag] as $page) {
+                        if (page_exists($page) && auth_quickaclcheck($page) >= AUTH_READ && !isHiddenPage($page)) {
+                            $used_pages[] = $page;
+                            if ($modified_check_needed) {
+                                $cache->depends['files'][] = wikiFN($page);
+                            }
+                        }
+                    }
+
+                    if ($used_pages != $meta_pages) {
+                        msg('Requesting purge');
+                        $cache->depends['purge'] = true;
+                        $event->stopPropagation();
+                        $event->preventDefault();
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 }
 
