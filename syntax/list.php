@@ -14,7 +14,7 @@ class syntax_plugin_tagextract_list extends DokuWiki_Syntax_Plugin {
      * @return string Syntax mode type
      */
     public function getType() {
-        return 'substition';
+        return 'container';
     }
     /**
      * @return string Paragraph type
