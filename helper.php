@@ -45,10 +45,12 @@ class helper_plugin_tagextract extends DokuWiki_Plugin {
                     foreach ($include_ins as $ii => $iins) {
                         if ($iins[0] == 'listitem_open') {
                             $include_ins[$ii][1][0] += 2 - $base_level;
+                        } elseif ($iins[0] == 'plugin' && $iins[1][0] == 'tagextract_tag') {
+                            $include_ins[$ii][1][1]['included'] = true;
                         }
                     }
 
-                    foreach ($ins[1][1] as $t => $uid) {
+                    foreach ($ins[1][1]['tags'] as $t => $uid) {
                         if (isset($tagextracts[$t])) {
                             $tagextracts[$t] = array_merge($tagextracts[$t], $include_ins);
                         } else {

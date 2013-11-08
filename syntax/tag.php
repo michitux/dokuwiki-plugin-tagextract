@@ -53,13 +53,13 @@ class syntax_plugin_tagextract_tag extends DokuWiki_Syntax_Plugin {
         global $ID;
 
         $tags = explode(' ', $match);
-        $data = array();
+        $tagdata = array();
 
         foreach ($tags as $tag) {
-            $data[substr($tag, 1)] = substr(md5($ID.'#'.$pos.'#'.$tag), 0, 6); // strip @, generate unique id
+            $tagdata[substr($tag, 1)] = substr(md5($ID.'#'.$pos.'#'.$tag), 0, 6); // strip @, generate unique id
         }
 
-        return $data;
+        return array('tags' => $tagdata, 'included' => false);
     }
 
     /**
@@ -71,20 +71,22 @@ class syntax_plugin_tagextract_tag extends DokuWiki_Syntax_Plugin {
      * @return bool If rendering was successful.
      */
     public function render($mode, &$renderer, $data) {
-        if ($mode == 'metadata') {
+        $tags = $data['tags'];
+        if ($mode == 'metadata' && !$data['included']) {
             /** @var $renderer Doku_Renderer_metadata */
             if (empty($renderer->meta['plugin_tagextract'])) {
-                $renderer->meta['plugin_tagextract'] = array_keys($data);
+                $renderer->meta['plugin_tagextract'] = array_keys($tags);
             } else {
-                $renderer->meta['plugin_tagextract'] = array_merge($renderer->meta['plugin_tagextract'], array_keys($data));
+                $renderer->meta['plugin_tagextract'] = array_merge($renderer->meta['plugin_tagextract'], array_keys($tags));
             }
         } elseif ($mode == 'xhtml') {
             global $ID; // include the id in the link in order to have a link back to this page in the tag extracts listing
-            foreach ($data as $tag => $uid) {
-                $renderer->doc .= '<a href="'.wl($ID).'#tagextract__'.$uid.'" id="tagextract__'.$uid.'" class="wikilink1">@'.hsc($tag).'</a> ';
+            foreach ($tags as $tag => $uid) {
+                $id = $data['included'] ? '' : ' id="tagextract__'.$uid.'"';
+                $renderer->doc .= '<a href="'.wl($ID).'#tagextract__'.$uid.'"'.$id.' class="wikilink1">@'.hsc($tag).'</a> ';
             }
         } else {
-            foreach ($data as $tag => $uid) {
+            foreach ($tags as $tag => $uid) {
                 $renderer->emphasis_open();
                 $renderer->cdata(' @'.$tag.' ');
                 $renderer->emphasis_close();
