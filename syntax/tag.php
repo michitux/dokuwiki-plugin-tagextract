@@ -82,8 +82,13 @@ class syntax_plugin_tagextract_tag extends DokuWiki_Syntax_Plugin {
         } elseif ($mode == 'xhtml') {
             global $ID; // include the id in the link in order to have a link back to this page in the tag extracts listing
             foreach ($tags as $tag => $uid) {
-                $id = $data['included'] ? '' : ' id="tagextract__'.$uid.'"';
-                $renderer->doc .= '<a href="'.wl($ID).'#tagextract__'.$uid.'"'.$id.' class="wikilink1">@'.hsc($tag).'</a> ';
+                $id = 'tagextract__'.$uid;
+                if ($data['included']) {
+                    // internallink can't be used here because the anchor is not a valid header anchor
+                    $renderer->doc .= '<a href="'.wl($ID).'#'.$id.'" class="wikilink1">@'.hsc($tag).'</a> ';
+                } else {
+                    $renderer->doc .= '<em id="'.$id.'">@'.hsc($tag).'</em> ';
+                }
             }
         } else {
             foreach ($tags as $tag => $uid) {
