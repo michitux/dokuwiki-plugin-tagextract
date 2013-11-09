@@ -105,7 +105,6 @@ class action_plugin_tagextract extends DokuWiki_Action_Plugin {
                     }
 
                     if ($used_pages != $meta_pages) {
-                        msg('Requesting purge');
                         $cache->depends['purge'] = true;
                         $event->stopPropagation();
                         $event->preventDefault();
