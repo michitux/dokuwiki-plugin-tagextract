@@ -37,7 +37,7 @@ class syntax_plugin_tagextract_tag extends DokuWiki_Syntax_Plugin {
     public function connectTo($mode) {
         // the syntax can only be used inside lists
         if ($mode == 'listblock')
-            $this->Lexer->addSpecialPattern('(?:@[^\n ]*)+(?=\n)',$mode,'plugin_tagextract_tag');
+            $this->Lexer->addSpecialPattern('(?:@[^\n ]* *)+(?=\n)',$mode,'plugin_tagextract_tag');
     }
 
     /**
