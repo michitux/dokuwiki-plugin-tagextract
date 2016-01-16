@@ -1,7 +1,7 @@
 base   tagextract
 author Michael Hamann
 email  michael@content-space.de
-date   2013-11-06
+date   2016-01-16
 name   tagextract plugin
 desc   Extracts tagged information from pages
 url    https://www.dokuwiki.org/plugin:tagextract
