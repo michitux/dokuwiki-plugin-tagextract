@@ -17,7 +17,7 @@ class action_plugin_tagextract extends DokuWiki_Action_Plugin {
      * @param Doku_Event_Handler $controller DokuWiki's event controller object
      * @return void
      */
-    public function register(Doku_Event_Handler &$controller) {
+    public function register(Doku_Event_Handler $controller) {
 
         $controller->register_hook('INDEXER_PAGE_ADD', 'BEFORE', $this, 'handle_indexer_page_add');
         $controller->register_hook('INDEXER_VERSION_GET', 'BEFORE', $this, 'handle_indexer_version_get');
@@ -34,7 +34,7 @@ class action_plugin_tagextract extends DokuWiki_Action_Plugin {
      * @return void
      */
 
-    public function handle_indexer_page_add(Doku_Event &$event, $param) {
+    public function handle_indexer_page_add(Doku_Event $event, $param) {
         $meta = p_get_metadata($event->data['page'], 'plugin_tagextract');
         if (!empty($meta)) {
             $event->data['metadata']['plugin_tagextract'] = $meta;
@@ -51,7 +51,7 @@ class action_plugin_tagextract extends DokuWiki_Action_Plugin {
      *                           handler was registered]
      * @return void
      */
-    public function handle_indexer_version_get(Doku_Event &$event, $param) {
+    public function handle_indexer_version_get(Doku_Event $event, $param) {
         $event->data['plugin_tagextract'] = '0.1';
     }
 
@@ -63,7 +63,7 @@ class action_plugin_tagextract extends DokuWiki_Action_Plugin {
      *                           handler was registered]
      * @return bool              If the cache may be used
      */
-    public function handle_parser_cache_use(Doku_Event &$event, $param) {
+    public function handle_parser_cache_use(Doku_Event $event, $param) {
         global $conf;
         /** @var $cache cache_parser */
         $cache = $event->data;
